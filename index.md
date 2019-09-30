@@ -1,2 +1,2 @@
 # Hello World
-post.title
+{{ post.title }}
