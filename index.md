@@ -1,4 +1,3 @@
 # Hello World
-{% for post in site.posts %}
-{{ post.url }} {{ post.title }}
-{% endfor %}
+
+[Linky Link]({% post_url _posts/2019-09-30-hello-world.md %})
