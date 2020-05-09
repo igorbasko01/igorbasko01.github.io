@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "PySpark + Presto JDBC Dialect"
-date:   2020-03-11 00:00:00 +0200
+date:   2020-05-09 00:00:00 +0200
 categories: spark presto jdbc glue aws emr
 ---
 ## Overview
