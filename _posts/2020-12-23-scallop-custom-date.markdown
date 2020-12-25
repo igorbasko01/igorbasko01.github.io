@@ -68,7 +68,7 @@ val arguments = ArgumentsParser(args)
 println(s"App name: ${arguments.appName()}, Date: ${arguments.date()}")
 // App Name: sample-app, Date: 2020-12-23
 ```
-And that is great, but what happens if an invalid date is provided? The error message is not that grate.
+And that is great, but what happens if an invalid date is provided? The error message is not that great.
 ```scala
 // --app-name sample-app --date 2020-12-40
 // [scallop] Error: Bad arguments for option 'date': '2020-12-40' - wrong arguments format
