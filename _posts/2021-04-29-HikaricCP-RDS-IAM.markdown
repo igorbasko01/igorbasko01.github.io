@@ -5,12 +5,12 @@
   date:   2021-05-02 00:00:00 +0200
   published: true
 ---
-# Overview
-As I tried to describe in the title, apparently using a ConnectionPool on Postgres RDS with the 
-IAM authentication is not that straightforward. 
+## Overview
+As I tried to describe in the title, apparently using a ConnectionPool on Postgres RDS with the
+IAM authentication is not that straightforward.
 
 One of the caveats of the IAM authentication, is that the token that is generated is available for 15 minutes.
-Which means that after 15 minutes a new connection needs to regenerate a token. But the connection pool that 
+Which means that after 15 minutes a new connection needs to regenerate a token. But the connection pool that
 we chose doesn't have a built-in option to pass some token generator, or some similar capabilities.
 
 For that we have created a simple `DataSource` that would generate a new token when a `getConnection` method
@@ -18,7 +18,7 @@ is called.
 
 The whole solution is described in the following sections.
 
-# How to authenticate with an IAM
+## How to authenticate with an IAM
 In order to do an IAM Authentication with RDS, we are using the AWS Java SDK.
 And more specifically the following services:
 1. AWSSecurityTokenServiceClientBuilder - In order to fetch the credentials.
@@ -68,7 +68,7 @@ established using that token, then while the connection is still open, it will w
 But once the connection is broken the same token can't be used to reconnect if the
 15 minutes expiry time has passed.
 
-# How to define the connection pool
+## How to define the connection pool
 We went with using HikariCP as our connection pooling solution.
 It was pretty straight forward to initialize it and start using it.
 With a few lines of code we were able to replace our previous non CP solution.
@@ -91,7 +91,7 @@ connection to the RDS.
 Basically after creating the `HikariDataSource` we pass it to our database abstraction
 framework, which in our case is jOOQ.
 
-# Updating the password when a connection is requested
+## Updating the password when a connection is requested
 The most naive approach for updating the password, is just to override the `getConnection` method
 of the data source.
 In our case we are connecting to a postgres DB, so we were using the `PGSimpleDataSource`
