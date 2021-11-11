@@ -2,8 +2,8 @@
   layout: post
   title: "Arithmetic AST with fastparse"
   categories: scala fastparse
-  date:   2021-08-22 00:00:00 +0200
-  published: false
+  date:   2021-11-11 00:00:00 +0200
+  published: true
 ---
 
 ## Overview
