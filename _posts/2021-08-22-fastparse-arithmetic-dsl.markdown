@@ -64,7 +64,85 @@ With a bit of manipulation I was able to create a parser that creates the AST, a
 the AST itself would be able to evaluate itself when needed.
 
 ## The Solution
-Code snippets with explanations.
+First of all I defined the Expressions that I would expect.
+```scala
+sealed trait Expression
+case class Div(r: Expression, l: Expression) extends Expression
+case class Mul(r: Expression, l: Expression) extends Expression
+case class Add(r: Expression, l: Expression) extends Expression
+case class Sub(r: Expression, l: Expression) extends Expression
+case class Num(value: String) extends Expression
+case class Metric(id: String) extends Expression
+```
+It contains the four basic arithmetic expressions, an expression that
+represents a number and an expression that represents a Metric.
+
+After that I have defined the actual Fastparse patterns that would map onto
+those expressions.
+```scala
+def number[_: P]: P[Expression] = P(CharIn("0-9").rep(1)).!.map(Num)
+def metric[_: P]: P[Expression] = P("{" ~ number.! ~ "}").map(Metric)
+def factor[_: P]: P[Expression] = P(number | metric | parens)
+def parens[_: P]: P[Expression] = P("(" ~/ addSub ~ ")")
+
+def divMul[_: P]: P[Expression] = P(factor ~ (CharIn("*/").! ~/ factor).rep).map((astBuilder _).tupled)
+def addSub[_: P]: P[Expression] = P(divMul ~ (CharIn("+\\-").! ~/ divMul).rep).map((astBuilder _).tupled)
+def expr[_: P]: P[Expression] = P(addSub ~ End)
+```
+The patterns are basically the arithmetic example pattern from the
+fastparse [documentation](https://com-lihaoyi.github.io/fastparse/)
+But instead of evaluating the result while parsing, it builds the AST.
+For the simple metric and number patterns, I map the parsed result directly on
+the relevant Expressions.
+
+For the Arithmetic patterns (divMul and addSub) I modified a bit the example
+to create the relevant Expressions
+```scala
+def astBuilder(initial: Expression, rest: Seq[(String, Expression)]): Expression = {
+    rest.foldLeft(initial) {
+      case (left, (operator, right)) =>
+        operator match {
+          case "*" => Mul(left, right)
+          case "/" => Div(left, right)
+          case "+" => Add(left, right)
+          case "-" => Sub(left, right)
+        }
+    }
+  }
+```
+
+And if we run some tests, we can see the following results
+```scala
+"the parser" should "create an AST of only numeric expression" in {
+    val expression = "3/2"
+    val ast = Parser.parse(expression)
+    ast shouldEqual Right(Div(Num("3"), Num("2")))
+  }
+
+  it should "create an AST of mixed operators" in {
+    val expression = "3+4*5"
+    Parser.parse(expression) shouldEqual Right(Add(Num("3"), Mul(Num("4"), Num("5"))))
+  }
+
+  it should "create an AST with a metric" in {
+    val expression = "3+{4}/5"
+    Parser.parse(expression) shouldEqual Right(Add(Num("3"), Div(Metric("4"), Num("5"))))
+  }
+```
+
+The `Parser` object is just a wrapper for the fastparse parser, it just converts the
+parsing result into an `Either`.
+```scala
+object Parser {
+  type Error = String
+  def parse(expression: String): Either[Error, Expression] =
+    fastparse.parse(expression, Patterns.expr(_))
+      .fold((e, _, _) => Left(e), (s, _) => Right(s))
+}
+```
 
 ## Next steps
-Adding new functions/syntax for the expression.
+From that simple example we were able to add more "Functions" to the expression
+that would be part of the syntax that we support in our Data Quality Expectations.
+And that allows us to customize the language of the expectations according to
+our user needs.
