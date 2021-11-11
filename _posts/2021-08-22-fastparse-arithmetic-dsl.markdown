@@ -146,3 +146,5 @@ From that simple example we were able to add more "Functions" to the expression
 that would be part of the syntax that we support in our Data Quality Expectations.
 And that allows us to customize the language of the expectations according to
 our user needs.
+
+Thanks for reading !
