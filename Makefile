@@ -1,2 +1,2 @@
 local-run:
-	bundle exec jekyll serve
+	bundle exec jekyll serve --unpublished

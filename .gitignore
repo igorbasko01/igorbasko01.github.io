@@ -1,4 +1,4 @@
-Gemfile*
 _site/
 .idea/
 .sass-cache
+.jekyll-cache/
