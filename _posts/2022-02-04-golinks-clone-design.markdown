@@ -3,7 +3,7 @@
   title: "go/links clone design"
   categories: python database
   created: 2022-02-04
-  date: 2022-02-06
+  date: 2022-02-06 00:00:00 +0200
   published: true
 ---
 
