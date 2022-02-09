@@ -1,7 +1,7 @@
 ---
   layout: post
   title: "go/links clone design"
-  categories: python database
+  categories: python database golinks
   created: 2022-02-04
   date: 2022-02-06 00:00:00 +0200
   published: true
@@ -53,3 +53,5 @@ In my next posts I will take the implementation step by step, and describe how I
 each part of the system, so you could try and replicate and even do better.
 
 Thanks for reading, and see you soon.
+
+[Next post]({% post_url 2022-02-08-golinks-webserver-initial-implementation %}) in the series.
