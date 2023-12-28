@@ -27,23 +27,43 @@ The board typically runs on OrangePi OS (Druid), an Android-based operating syst
 In summary, the OrangePi 5B struck me as an excellent choice — a robust, feature-rich board available at a competitive price, ideal for both my current needs and future experimentation.
 
 ## WiringOP
-FIXME: Give some background about the WiringOP application and the way to build it, and what it produces.
+WiringOP is a pre-installed Android application on the OrangePi Android OS, serving as a gateway to exploring the physical pins of the SBC. It provides functionalities to read and write to these pins, offering a visual representation of their states.
 
-The OrangePi Android OS comes with a pre-installed Android application called WiringOP, which provides a way to explore the different phsyical pins that are located on the SBC.
+One notable feature of the WiringOP app is a button that displays the state of all the pins, essentially mirroring the output of the command-line instruction gpiox readall. The resulting display looks something like this:
 
-It allows to read and write to the different pins that are on the board, and allows viewing the state of all the pins.
+```shell
++------+-----+----------+------+---+  OPi H6  +---+------+----------+-----+------+
+ | GPIO | wPi |   Name   | Mode | V | Physical | V | Mode | Name     | wPi | GPIO |
+ +------+-----+----------+------+---+----++----+---+------+----------+-----+------+
+ |      |     |     3.3V |      |   |  1 || 2  |   |      | 5V       |     |      |
+ |  230 |   0 |    SDA.1 |  OFF | 0 |  3 || 4  |   |      | 5V       |     |      |
+ |  229 |   1 |    SCL.1 |  OFF | 0 |  5 || 6  |   |      | GND      |     |      |
+ |  228 |   2 |     PWM1 |  OFF | 0 |  7 || 8  | 0 | OFF  | PD21     | 3   | 117  |
+ |      |     |      GND |      |   |  9 || 10 | 0 | OFF  | PD22     | 4   | 118  |
+ |  120 |   5 |    RXD.3 | ALT4 | 0 | 11 || 12 | 0 | OFF  | PC09     | 6   | 73   |
+ |  119 |   7 |    TXD.3 | ALT4 | 0 | 13 || 14 |   |      | GND      |     |      |
+ |  122 |   8 |    CTS.3 |  OFF | 0 | 15 || 16 | 0 | OFF  | PC08     | 9   | 72   |
+ |      |     |     3.3V |      |   | 17 || 18 | 0 | OFF  | PC07     | 10  | 71   |
+ |   66 |  11 |   MOSI.0 | ALT4 | 0 | 19 || 20 |   |      | GND      |     |      |
+ |   67 |  12 |   MISO.0 | ALT4 | 0 | 21 || 22 | 0 | OFF  | RTS.3    | 13  | 121  |
+ |   64 |  14 |   SCLK.0 | ALT4 | 0 | 23 || 24 | 0 | ALT4 | CE.0     | 15  | 69   |
+ |      |     |      GND |      |   | 25 || 26 | 0 | OFF  | PH03     | 16  | 227  |
+ +------+-----+----------+------+---+----++----+---+------+----------+-----+------+
+ | GPIO | wPi |   Name   | Mode | V | Physical | V | Mode | Name     | wPi | GPIO |
+ +------+-----+----------+------+---+  OPi H6  +---+------+----------+-----+------+
+```
 
-TODO: Add a Picture of the Icon of the WiringOP in the OrangePi OS.
+From this table, two columns are particularly important: `wPi` and `V`. The `wPi` number is crucial for interacting with the pins through software, as it's used to reference a pin's state. The `V` column, on the other hand, indicates whether current is flowing through a pin, which is vital for setting or resetting it.
 
-TODO: Add a Picture of the layout of the WiringOP Android Application.
+After some experimentation with WiringOP, it became clear that if the app could read and write to the pins, there should be a way to replicate this functionality in my own Android application. But how to achieve this was not immediately obvious.
 
-TODO: Add a Picture of the output of `gpiox readall`
+My initial search for resources or discussions online didn't yield straightforward answers. So, I pivoted to a more direct approach: diving into the source code of WiringOP itself. Given that WiringOP came pre-installed with the fresh installation of OrangePi OS, I surmised that it was bundled with the OS. This realization kicked off my search into the depths of OrangePI's Android OS source code, hoping to uncover the mechanisms that make WiringOP work as it does.
 
 ## OrangePi Android OS
-FIXME: Give some background about the OrangePi Android OS, where it could be found, and how to download and unpack it.
+FIXME: Talk a bit about why we would like to get the OrangePi Android OS source code, and why I wasn't able to use the WiringOp straight from github. Give some background about the OrangePi Android OS, where it could be found, and how to download and unpack it.
 
 ## WiringOP Internals
-FIXME: Give background about the relevant internals of WiringOP, which files are necesseray to copy to our own project, and why it is important to keep the package name `com.example.wiringop` the same in our project as well, and why we need to run the `chmod 666 /dev/mem`.
+FIXME: Give background about the relevant internals of WiringOP, how to build it, which files are necesseray to copy to our own project, and why it is important to keep the package name `com.example.wiringop` the same in our project as well, and why we need to run the `chmod 666 /dev/mem`.
 
 ## Our Project
 FIXME: Give a background on which type of project we are creating in Android Studio, why it is an Android library (so it would be possible to use it in Unity), and how the copied files are used in our library.
