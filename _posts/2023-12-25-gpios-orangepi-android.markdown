@@ -62,6 +62,22 @@ My initial search for resources or discussions online didn't yield straightforwa
 ## OrangePi Android OS
 FIXME: Talk a bit about why we would like to get the OrangePi Android OS source code, and why I wasn't able to use the WiringOp straight from github. Give some background about the OrangePi Android OS, where it could be found, and how to download and unpack it.
 
+One alternative approach that I wanted to investigate was to look in the [WiringOP github repository](https://github.com/orangepi-xunlong/wiringOP). The problem there is that I wasn't able to understand how I compile the code such it will provide me with access from the Android Kotlin code to the pins on the board. Also the issues sections didn't contain anything useful.
+
+So without any other available approaches I went with downloading the OrangePi Android OS source code. Which actually is available through their site. The actual source code is compressed into multiple `tar.gz` files. All those files are located in their Google Drive account at the following location: [RK3588S_Android_Source_Code](https://drive.google.com/drive/folders/14efL7SWZ68CZCbUayngLL4iAtGQoV9a0).
+
+After downloading all the files we need to combine them together into a single file, and then extract it contents. This procedure takes a while.
+
+The commands:
+1. Combining into a single file - `cat Android_12.tar.gz* > Android_12.tar.gz`
+2. Extracting the contents - `tar -xvf Android_12.tar.gz`
+
+Please note that if you are doing it on Windows, then you can use [Cygwin](https://cygwin.com/) to have the `tar` command.
+
+The process of extracting is a lengthy one, so patience is required.
+
+After everything was extracted, now we can look for the `WiringOP` application. And as expected it could be located in the following path: `packages/`
+
 ## WiringOP Internals
 FIXME: Give background about the relevant internals of WiringOP, how to build it, which files are necesseray to copy to our own project, and why it is important to keep the package name `com.example.wiringop` the same in our project as well, and why we need to run the `chmod 666 /dev/mem`.
 
