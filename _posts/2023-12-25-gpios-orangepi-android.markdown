@@ -60,23 +60,20 @@ After some experimentation with WiringOP, it became clear that if the app could 
 My initial search for resources or discussions online didn't yield straightforward answers. So, I pivoted to a more direct approach: diving into the source code of WiringOP itself. Given that WiringOP came pre-installed with the fresh installation of OrangePi OS, I surmised that it was bundled with the OS. This realization kicked off my search into the depths of OrangePI's Android OS source code, hoping to uncover the mechanisms that make WiringOP work as it does.
 
 ## OrangePi Android OS
-FIXME: Talk a bit about why we would like to get the OrangePi Android OS source code, and why I wasn't able to use the WiringOp straight from github. Give some background about the OrangePi Android OS, where it could be found, and how to download and unpack it.
+In my quest to establish a connection between my Android Kotlin code and the GPIO pins on the OrangePi board, I initially considered exploring the [WiringOP GitHub repository](https://github.com/orangepi-xunlong/wiringOP). However, this route proved challenging as the repository lacked clear instructions on compiling the code for Android integration, and the issues section offered no further insights.
 
-One alternative approach that I wanted to investigate was to look in the [WiringOP github repository](https://github.com/orangepi-xunlong/wiringOP). The problem there is that I wasn't able to understand how I compile the code such it will provide me with access from the Android Kotlin code to the pins on the board. Also the issues sections didn't contain anything useful.
+Faced with limited options, I decided to delve directly into the OrangePi Android OS source code, available on their website. The source code is split into several `tar.gz` files, all housed on their Google Drive under the [RK3588S_Android_Source_Code](https://drive.google.com/drive/folders/14efL7SWZ68CZCbUayngLL4iAtGQoV9a0) directory.
 
-So without any other available approaches I went with downloading the OrangePi Android OS source code. Which actually is available through their site. The actual source code is compressed into multiple `tar.gz` files. All those files are located in their Google Drive account at the following location: [RK3588S_Android_Source_Code](https://drive.google.com/drive/folders/14efL7SWZ68CZCbUayngLL4iAtGQoV9a0).
+To start working with the code, the first step is to combine and extract these files. This involves:
 
-After downloading all the files we need to combine them together into a single file, and then extract it contents. This procedure takes a while.
+1. Combining the files into a single archive: `cat Android_12.tar.gz* > Android_12.tar.gz`
+2. Extracting the contents: `tar -xvf Android_12.tar.gz`
 
-The commands:
-1. Combining into a single file - `cat Android_12.tar.gz* > Android_12.tar.gz`
-2. Extracting the contents - `tar -xvf Android_12.tar.gz`
+For Windows users, the [Cygwin](https://cygwin.com/) tool can provide the necessary `tar` command. Be prepared, as the extraction process is quite time-consuming and requires patience.
 
-Please note that if you are doing it on Windows, then you can use [Cygwin](https://cygwin.com/) to have the `tar` command.
+Once the extraction is complete, the hunt for the WiringOP application begins. As anticipated, it resides in `packages/apps/WiringOP`. Here, not only is the application's source code present, but also, crucially, the C source code of WiringOP, similar to what's seen on GitHub. The key difference here is the presence of several `Android.mk` files – absent in the GitHub repository – which are essential for building the required libraries and files for any Android application looking to access the GPIOs on the board.
 
-The process of extracting is a lengthy one, so patience is required.
-
-After everything was extracted, now we can look for the `WiringOP` application. And as expected it could be located in the following path: `packages/`
+In the following section, we'll take a closer look at these components to understand what's needed for our project and how to effectively utilize them.
 
 ## WiringOP Internals
 FIXME: Give background about the relevant internals of WiringOP, how to build it, which files are necesseray to copy to our own project, and why it is important to keep the package name `com.example.wiringop` the same in our project as well, and why we need to run the `chmod 666 /dev/mem`.
