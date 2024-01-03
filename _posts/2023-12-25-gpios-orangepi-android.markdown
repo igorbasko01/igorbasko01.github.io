@@ -76,7 +76,19 @@ Once the extraction is complete, the hunt for the WiringOP application begins. A
 In the following section, we'll take a closer look at these components to understand what's needed for our project and how to effectively utilize them.
 
 ## WiringOP Internals
-FIXME: Give background about the relevant internals of WiringOP, how to build it, which files are necesseray to copy to our own project, and why it is important to keep the package name `com.example.wiringop` the same in our project as well, and why we need to run the `chmod 666 /dev/mem`.
+In the heart of the WiringOP application lies the process of building the necessary libraries – the `.so` files. The most straightforward method I found is using Android Studio. Open the `packages/apps/WiringOP` directory in Android Studio and navigate to the `com.example.demo.MainActiviy` file. From there, execute the `Build->Make Module 'wiringOp.app.main'` command.
+
+This process generates an `.apk` file, specifically `app-debug.apk`, located in the `build/outputs/apk/debug/` folder. The compiled libraries we need are tucked inside this `.apk`, under the `lib` folder. Within, you'll find two subfolders: `armeabi-v7a` and `arm64-v8a`, each corresponding to a different ARM architecture. For my project, I used `arm64-v8a`, which involved copying this entire folder into my own Android project under `src/main/jniLibs/`.
+
+Having successfully built the WiringOP libraries, the next step is to establish a communication interface with them. In the WiringOP app, under the `com.example.wiringop` package, there's a crucial file named `wpiControl`. It's a class filled with static methods enabling interaction with the WiringOP libraries.
+
+An important note here: when integrating `wpiControl` into your application, it’s essential to retain its original package structure, i.e., `com.example.wiringop`. While not aesthetically pleasing, this is necessary for the JNI (Java Native Interface) to locate the functions in the libraries. Though it’s likely possible to alter this using `javac -h` or similar tools, I didn’t delve into that for this project.
+
+Before you start using the wpiControl class, there's one more critical step. The WiringPi library maps the memory directly to the pins, necessitating read and write permissions to the physical memory of the OrangePi device. This is achieved by executing `chmod 666 /dev/mem` before calling the `wiringPiSetup()` method. The most practical way to run this command is at your application's startup.
+
+A word of caution: the `chmod 666` command sets permissions that are not secure, especially for a production environment. While it was acceptable for my side project, I advise caution and further research for more secure alternatives in different contexts.
+
+Now, let’s pivot to how we integrate and use the `wpiControl` class in our own Android application.
 
 ## Our Project
 FIXME: Give a background on which type of project we are creating in Android Studio, why it is an Android library (so it would be possible to use it in Unity), and how the copied files are used in our library.
