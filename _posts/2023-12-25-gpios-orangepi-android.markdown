@@ -93,8 +93,24 @@ Now, let’s pivot to how we integrate and use the `wpiControl` class in our own
 ## Our Project
 FIXME: Give a background on which type of project we are creating in Android Studio, why it is an Android library (so it would be possible to use it in Unity), and how the copied files are used in our library.
 
+I mentioned our project many times in this post so far, I think it is time to dive a bit deeper into what type of project it is. 
+
+The project is basically a Unity game, that I would like to control using the mentioned D-pad. The game should run on the OrangePi5b and it should be built for the Android OS.
+
+My end goal is to achieve a way were pressing on the D-Pad actually invokes Android supported D-Pad keys. I wanted to avoid the option of creating custom events that I would need to monitor separatly in my Unity game. I wanted the D-Pad to function as an actula D-Pad press that Unity identifies and handles by default.
+
+For the easiest approach I decided that it would best to use Android's `input` CLI command, that allows you to invoke key press events, that imitate an actual key press.
+
+My thought was to use Unity's ability to have an Android plugin. This will allow me to use the compiled libraries through some Android Kotlin code that will be packaged into an `.aar` file, which will be loaded into the Unity project and called from Unity's C# code.
+
+This Android plugin, will be the Android module that I discussed in the previous sections. It will include the `wpiControl` class and will call the `input` command when it detects when a corresponding GPIO was turned on.
+
+The idea was that the Android Plugin will create a thread that will periodically poll if any of the expected GPIOs were turned on, and if they did, it would mean that a D-Pad was pressed. If it detects a press it will invoke the correspondig `input` command with the relevant input event.
+
+TODO: Add and example of how the `input` command invokes a specific key press.
+
 ## Unity
-FIXME: describe how this library will be used in Unity. How it should be built, and what do we need to do in Unity player settings to use arm64-v8a.
+FIXME: describe how this library will be used in Unity. How it should be built, and what do we need to do in Unity player settings to use arm64-v8a. How do we call the Android library from inside C# and where we can find more information on that topic.
 
 ## Conclusion
 FIXME: Summarize the steps that were done. And also propose to take a look into integrating the D-Pad and GPIO solution into Unity's new Input System.
