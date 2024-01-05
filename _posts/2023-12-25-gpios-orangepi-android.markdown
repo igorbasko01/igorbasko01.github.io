@@ -91,23 +91,127 @@ A word of caution: the `chmod 666` command sets permissions that are not secure,
 Now, let’s pivot to how we integrate and use the `wpiControl` class in our own Android application.
 
 ## Our Project
-FIXME: Give a background on which type of project we are creating in Android Studio, why it is an Android library (so it would be possible to use it in Unity), and how the copied files are used in our library.
+So far in this post, I've referenced our project several times, and it's time to delve deeper into its specifics. The project is a Unity game controlled by a D-pad, designed to run on the OrangePi5b with Android OS.
 
-I mentioned our project many times in this post so far, I think it is time to dive a bit deeper into what type of project it is. 
+The aim was to make the D-pad function like a standard Android D-pad, recognized and handled by Unity without needing custom event monitoring. To achieve this, I utilized the Android `input` CLI command to simulate key presses.
 
-The project is basically a Unity game, that I would like to control using the mentioned D-pad. The game should run on the OrangePi5b and it should be built for the Android OS.
+Incorporating this functionality into Unity required creating an Android plugin. This plugin is essentially an Android module containing the compiled libraries and the `wpiControl` class from WiringOP, which interacts with the GPIOs and executes the `input` command.
 
-My end goal is to achieve a way were pressing on the D-Pad actually invokes Android supported D-Pad keys. I wanted to avoid the option of creating custom events that I would need to monitor separatly in my Unity game. I wanted the D-Pad to function as an actula D-Pad press that Unity identifies and handles by default.
+The plugin works by starting a thread that constantly checks the GPIO pins. When it detects a button press on the D-pad, it triggers the corresponding `input` command to simulate a D-pad key press in Unity.
 
-For the easiest approach I decided that it would best to use Android's `input` CLI command, that allows you to invoke key press events, that imitate an actual key press.
+Here is an example command for simulating a DPAD_UP key press: 
 
-My thought was to use Unity's ability to have an Android plugin. This will allow me to use the compiled libraries through some Android Kotlin code that will be packaged into an `.aar` file, which will be loaded into the Unity project and called from Unity's C# code.
+```shell
+input keyevent 19
+``` 
 
-This Android plugin, will be the Android module that I discussed in the previous sections. It will include the `wpiControl` class and will call the `input` command when it detects when a corresponding GPIO was turned on.
+I based the key simulations on the `KEYCODE_DPAD_*` constants found in the `android.view.KeyEvent` class of the Android SDK. The Android plugin was developed in Android Studio as an Android Library module, where I included the necessary `arm64-v8a` libraries and the `wpiControl` class.
 
-The idea was that the Android Plugin will create a thread that will periodically poll if any of the expected GPIOs were turned on, and if they did, it would mean that a D-Pad was pressed. If it detects a press it will invoke the correspondig `input` command with the relevant input event.
+For creating an Android plugin, we just need to create a new project in Android Studio, and create a new module of Android Library type.
 
-TODO: Add and example of how the `input` command invokes a specific key press.
+Copy the `arm64-v8a` folder under the `src/main/jniLibs/` folder (create the `jniLibs` folder if it doesn't exist).
+
+Copy the `wpiControl` file, under the `src/main/java/` folder into the `com.example.wiringop` package.
+
+The core of the plugin is the `UnityEntrypoint` class, which handles GPIO reading and triggers key events:
+```kotlin
+class UnityEntrypoint() {
+    // The thread that will run our GPIO handling loop.
+    private var executor = Executors.newSingleThreadExecutor()
+
+    // This will start the main GPIO loop that handles reading from the pins and invoking the relevant key
+    fun start() {
+        if (executor.isShutdown)
+            executor = Executors.newSingleThreadExecutor()
+        executor.execute {
+            mainGpioLoop()
+        }
+    }
+
+    private fun mainGpioLoop() {
+        // Prepare the necessary things for using the wiringPi library to read GPIOs.
+        runRootCommand("chmod 666 /dev/mem")
+        wpiControl.wiringPiSetup()
+
+        // All the D-Pad related pins should be in the IN mode.
+        initializeDpadKeysPins()
+
+        // Start looping and handling GPIOs
+        while (!Thread.currentThread().isInterrupted) {
+            handleKeysPress()
+            Thread.sleep(100) // Wait a bit before continuing to read from GPIOs.
+        }
+    }
+
+    private fun initializeDpadKeysPins() {
+        dpadKeyPins.forEach { (_, pin) -> 
+            wpiControl.pinMode(pin, 0)
+        }
+    }
+
+    private fun handleKeysPress() {
+        dpadKeyPins.forEach { (key, pin) -> 
+            val pinValue = wpiControl.digitalRead(pin)
+            if (pinValue == 0) {
+                invokeKey(key)
+            }
+        }
+    }
+
+    private fun invokeKey(dpadKey: DpadKey) {
+        val keyCode = when (dpadKey) {
+            DpadKey.UP -> KeyEvent.KEYCODE_DPAD_UP
+            DpadKey.DOWN -> KeyEvent.KEYCODE_DPAD_DOWN
+            DpadKey.LEFT -> KeyEvent.KEYCODE_DPAD_LEFT
+            DpadKey.RIGHT -> KeyEvent.KEYCODE_DPAD_RIGHT
+            DpadKey.ENTER -> KeyEvent.KEYCODE_DPAD_ENTER
+        }
+        val cmd = "input keyevent $keyCode"
+        // This is a simplified approach, it might be better to also catch exceptions and print the output of the command to catch errors.
+        val process = Runtime.getRuntime().exec(cmd)
+        process.waitFor()
+    }
+
+    // This is basically running a command after switching to the root user.
+    private fun runRootCommand(cmd: String) {
+        // Please note that it is a simplified example, and we might need to aslo implement output printing and exception handling.
+        val process = Runtime.getRuntime().exec("su")
+        val dos = DataOutputStream(process.outputStream)
+        dos.writeBytes("$cmd\n")
+        dos.flush()
+        dos.writeBytes("exit\n")
+        dos.flush()
+        process.waitFor()
+        dos.close()
+    }
+
+    // Stops the thread
+    fun stop() {
+        executor.shutdown()
+    }
+
+    companion object {
+        enum class DpadKey {
+            UP,
+            DOWN,
+            LEFT,
+            RIGHT,
+            ENTER
+        }
+
+        // Here we should adjust the pin numbers, to correspond to the D-Pad buttons.
+        val dpadKeyPins = mapOf(
+            DpadKey.UP to 4,
+            DpadKey.DOWN to 9,
+            DpadKey.LEFT to 6,
+            DpadKey.RIGHT to 3,
+            DpadKey.ENTER to 10
+        )
+    }
+}
+```
+
+Building this module in Android Studio generates an `.aar` file, located in the `build/outputs/aar/` folder. This file is then integrated into the Unity project, a process I will describe in the next section.
 
 ## Unity
 FIXME: describe how this library will be used in Unity. How it should be built, and what do we need to do in Unity player settings to use arm64-v8a. How do we call the Android library from inside C# and where we can find more information on that topic.
