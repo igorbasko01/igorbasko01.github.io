@@ -216,6 +216,32 @@ Building this module in Android Studio generates an `.aar` file, located in the 
 ## Unity
 FIXME: describe how this library will be used in Unity. How it should be built, and what do we need to do in Unity player settings to use arm64-v8a. How do we call the Android library from inside C# and where we can find more information on that topic.
 
+Now that we have our Android plugin ready, we want to start using it. 
+
+In Unity loading the Android plugin and using it is done through the `AndroidJavaObject`. More details about it, could be found [here](https://docs.unity3d.com/Manual/android-plugins-java-code-from-c-sharp.html).
+
+Basically the idea is to create a C# class that initializes the `UnityEntrypoint` that we created in the previous section, and call its `start` and `stop` methods.
+
+An example C# Unity code:
+```csharp
+public class AndroidInputSimulator {
+    private AndroidJavaObject _plugin;
+
+    public void Start() {
+        _plugin = new AndroidJavaObject("our.package.UnityEntrypoint");
+        _plugin.Call("start");
+    }
+
+    public void Stop() {
+        _plugin?.Call("stop");
+    }
+}
+```
+
+That is basically it, now it is possible to initialize this `AndroidInputSimulator` anywhere in our Unity and call It's `Start` method, which will in turn calls the `start` method of `UnityEntrypoint` which will start the `mainGpioLoop` in a separate thread. 
+
+This thread would listen for the GPIOs and basically simulate a key press, which will be sent to Unity through the input system of Android. Which basically behaves as a regular key press.
+
 ## Conclusion
 FIXME: Summarize the steps that were done. And also propose to take a look into integrating the D-Pad and GPIO solution into Unity's new Input System.
 TODO: Update the date at the top of the document.
