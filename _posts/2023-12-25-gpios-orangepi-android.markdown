@@ -3,8 +3,8 @@
     title: "Handling GPIOs Made Easy on OrangePI Android"
     categories: orangepi kotlin gpio
     created: 2023-12-25
-    date: 2023-12-25 00:00:00 +0200
-    published: false
+    date: 2024-01-11 00:00:00 +0200
+    published: flase
 ---
 ## Overview
 Recently, I embarked on an exciting project that merges the realms of hardware and software: creating a custom D-pad controller for a Unity-based game, specifically designed to run on a Single Board Computer (SBC). My choice of hardware? The powerful yet cost-effective OrangePI.
@@ -18,18 +18,18 @@ Join me as I delve into the nuts and bolts of interfacing physical game controls
 ## OrangePi Background
 In my quest for the ideal SBC for this project, I settled on the OrangePi 5B, a choice driven by its impressive performance capabilities — both in terms of CPU and GPU — and its comparatively low cost.
 
-The OrangePi 5B is equipped with an 8-core CPU and the ARM Mali-G610 GPU, a combination that offers substantial power for demanding applications. This power is further complemented by an onboard NPU, an exciting feature that opens doors for future projects, potentially involving advanced computing tasks like machine learning.
+The OrangePi 5B is equipped with two 4-core CPUs and the ARM Mali-G610 GPU, a combination that offers substantial power for demanding applications. This power is further complemented by an onboard NPU, an exciting feature that opens doors for future projects, potentially involving advanced computing tasks like machine learning.
 
 Another appealing aspect of the OrangePi 5B is its integrated WIFI and Bluetooth functionality. This not only allows for versatile communication options with the device but also paves the way for interesting future explorations in wireless connectivity.
 
-The board typically runs on OrangePi OS (Druid), an Android-based operating system. This was a key factor in my decision, as I planned to develop a game using Unity. The Android platform is known for its compatibility with Unity, promising a smoother development process and optimal performance for the game.
+The board typically runs OrangePi OS (Druid), an Android-based operating system. This was a key factor in my decision, as I planned to develop a game using Unity. The Android platform is known for its compatibility with Unity, promising a smoother development process and optimal performance for the game.
 
 In summary, the OrangePi 5B struck me as an excellent choice — a robust, feature-rich board available at a competitive price, ideal for both my current needs and future experimentation.
 
 ## WiringOP
 WiringOP is a pre-installed Android application on the OrangePi Android OS, serving as a gateway to exploring the physical pins of the SBC. It provides functionalities to read and write to these pins, offering a visual representation of their states.
 
-One notable feature of the WiringOP app is a button that displays the state of all the pins, essentially mirroring the output of the command-line instruction gpiox readall. The resulting display looks something like this:
+One notable feature of the WiringOP app is a button that displays the state of all the pins, essentially mirroring the output of the command-line instruction `gpiox readall`. The resulting display looks something like this:
 
 ```shell
 +------+-----+----------+------+---+  OPi H6  +---+------+----------+-----+------+
@@ -164,7 +164,7 @@ class UnityEntrypoint() {
             DpadKey.DOWN -> KeyEvent.KEYCODE_DPAD_DOWN
             DpadKey.LEFT -> KeyEvent.KEYCODE_DPAD_LEFT
             DpadKey.RIGHT -> KeyEvent.KEYCODE_DPAD_RIGHT
-            DpadKey.ENTER -> KeyEvent.KEYCODE_DPAD_ENTER
+            DpadKey.ENTER -> KeyEvent.KEYCODE_ENTER
         }
         val cmd = "input keyevent $keyCode"
         // This is a simplified approach, it might be better to also catch exceptions and print the output of the command to catch errors.
@@ -214,34 +214,55 @@ class UnityEntrypoint() {
 Building this module in Android Studio generates an `.aar` file, located in the `build/outputs/aar/` folder. This file is then integrated into the Unity project, a process I will describe in the next section.
 
 ## Unity
-FIXME: describe how this library will be used in Unity. How it should be built, and what do we need to do in Unity player settings to use arm64-v8a. How do we call the Android library from inside C# and where we can find more information on that topic.
+With our Android plugin now ready, the next step is to integrate it into our Unity game. Unity handles Android plugins through the `AndroidJavaObject`, a powerful interface for interacting with Java objects. More information on this can be found in the [Unity documentation](https://docs.unity3d.com/Manual/android-plugins-java-code-from-c-sharp.html).
 
-Now that we have our Android plugin ready, we want to start using it. 
+The key is to create a C# class within Unity that initializes and controls the `UnityEntrypoint` class we developed in the Android plugin. This class will manage the starting and stopping of our GPIO listening loop.
 
-In Unity loading the Android plugin and using it is done through the `AndroidJavaObject`. More details about it, could be found [here](https://docs.unity3d.com/Manual/android-plugins-java-code-from-c-sharp.html).
-
-Basically the idea is to create a C# class that initializes the `UnityEntrypoint` that we created in the previous section, and call its `start` and `stop` methods.
-
-An example C# Unity code:
+Here’s an example of how this can be implemented in Unity:
 ```csharp
 public class AndroidInputSimulator {
     private AndroidJavaObject _plugin;
 
     public void Start() {
+        // Initialize the Android plugin
         _plugin = new AndroidJavaObject("our.package.UnityEntrypoint");
+        // Start the GPIO loop
         _plugin.Call("start");
     }
 
     public void Stop() {
+        // Stop the GPIO loop
         _plugin?.Call("stop");
     }
 }
+
 ```
 
-That is basically it, now it is possible to initialize this `AndroidInputSimulator` anywhere in our Unity and call It's `Start` method, which will in turn calls the `start` method of `UnityEntrypoint` which will start the `mainGpioLoop` in a separate thread. 
+This `AndroidInputSimulator` class can be used anywhere in our Unity game to start listening to GPIO inputs. When the `Start` method is called, it initiates the `mainGpioLoop` in a separate thread on the Android device, which listens for GPIO changes and simulates key presses. These simulated key presses are then recognized by Unity’s input system as if they were regular key presses.
 
-This thread would listen for the GPIOs and basically simulate a key press, which will be sent to Unity through the input system of Android. Which basically behaves as a regular key press.
+To build the game’s `.apk` file for deployment, we need to adjust a few settings in Unity’s player settings under the Android tab. Specifically, in the Configuration section, make the following updates:
+```
+Scripting Backend = IL2CPP
+Target Architectures = ARM64 (only)
+```
+
+The `ARM64` architecture setting is crucial because our Android library is built for `arm64-v8a`. The `IL2CPP` scripting backend is required since Unity cannot use `ARM64` with the `mono` backend.
+
+With these settings configured, you can now build and run the `.apk` on your device, and the game should respond to the D-pad inputs as intended.
 
 ## Conclusion
-FIXME: Summarize the steps that were done. And also propose to take a look into integrating the D-Pad and GPIO solution into Unity's new Input System.
-TODO: Update the date at the top of the document.
+In this post, we've journeyed through the intricate process of integrating a custom D-pad controller with a Unity game on an OrangePI SBC running Android OS. Let's briefly recap the key steps we undertook:
+
+1. **Choosing the Hardware**: We started by selecting the OrangePI 5B for its impressive performance and cost-effectiveness, coupled with its compatibility with Android OS – a prime choice for Unity game development.
+
+2. **Exploring WiringOP**: We delved into the WiringOP application, which offered a gateway to interact with the GPIOs on the OrangePI. This involved understanding its functionality and the crucial `wPi` and `V` columns in its GPIO table.
+
+3. **Diving into OrangePI's Android OS**: Faced with limited resources online, we explored the OrangePI Android OS source code to understand and replicate the functionality of WiringOP in our own Android application.
+
+4. **Building the Android Plugin**: We created an Android plugin in Android Studio, incorporating the WiringOP libraries and the `wpiControl` class. This plugin was essential in reading GPIO inputs and simulating key presses using the `input` CLI command.
+
+5. **Integrating with Unity**: In Unity, we used the `AndroidJavaObject` to integrate our Android plugin, allowing us to control the game with the custom D-pad. We also discussed the necessary Unity player settings for building the game's `.apk` file.
+
+As we look to the future, one promising avenue to explore is integrating this custom D-pad setup with Unity's new Input System. This modern, flexible system offers more options for input configuration and might provide an even smoother integration process and enhanced gameplay experience. It's an exciting prospect for further enhancing the interactivity of games on platforms like OrangePI.
+
+Embarking on a project that intertwines hardware and software aspects can be challenging but equally rewarding. Through this journey, we've seen how creativity and perseverance can lead to innovative solutions, broadening the horizons of what's possible in game development and hardware interaction.
