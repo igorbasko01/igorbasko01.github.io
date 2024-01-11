@@ -4,7 +4,7 @@
     categories: orangepi kotlin gpio
     created: 2023-12-25
     date: 2024-01-11 00:00:00 +0200
-    published: flase
+    published: false
 ---
 ## Overview
 Recently, I embarked on an exciting project that merges the realms of hardware and software: creating a custom D-pad controller for a Unity-based game, specifically designed to run on a Single Board Computer (SBC). My choice of hardware? The powerful yet cost-effective OrangePI.
