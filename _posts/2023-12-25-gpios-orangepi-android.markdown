@@ -6,25 +6,32 @@
     date: 2024-01-10 00:00:00 +0200
     published: true
 ---
-## Overview
-Recently, I embarked on an exciting project that merges the realms of hardware and software: creating a custom D-pad controller for a Unity-based game, specifically designed to run on a Single Board Computer (SBC). My choice of hardware? The powerful yet cost-effective OrangePI.
+## Preface
+Welcome to an exciting chapter in the journey of [Strikeco](http://strikeco.io), where innovation meets the world of tennis simulation. At **Strikeco**, we're not just creating tennis simulators; we're redefining the very essence of interactive sports technology. Our mission is to blend cutting-edge hardware with seamless software integration to bring you the future of tennis experiences.
 
-As for the operating system, I opted for Android OS. This decision was driven by the seamless compatibility and performance it offers with the Unity game engine.
+In this blog post, we'll dive into our latest exploration with the OrangePi 5B SBC. This piece of technology has emerged as a frontrunner in our pursuit of performance excellence and user-friendly design. As we navigate through the intricacies of hardware optimization, each step brings us closer to designing a custom SBC tailored perfectly for our final product.
+
+Join us on this adventure, as we share our insights and breakthroughs with the OrangePi 5B. Whether you're a tech enthusiast, a tennis aficionado, or simply curious about our process, there's something here for everyone. We're excited to give you a behind-the-scenes look at how we're pushing the boundaries of tennis simulation technology at Strikeco.
+
+## Overview
+Recently, our team embarked on an innovative project, bridging the gap between hardware and software: we are developing a custom D-pad controller for a Unity-based game, tailored to run seamlessly on a Single Board Computer (SBC). Our hardware of choice for testing? The robust and cost-effective OrangePI.
+
+For the operating system, we chose Android OS, a decision influenced by its seamless compatibility and impressive performance alongside the Unity game engine.
 
 While the specifics of the game itself are intriguing, this blog post will primarily focus on the technical side of things. Specifically, we'll explore how to handle GPIOs on the OrangePI Android OS and how this functionality can be integrated within a Unity game.
 
-Join me as I delve into the nuts and bolts of interfacing physical game controls with sophisticated software. I'll share insights and practical steps for anyone looking to embark on a similar venture with their Unity projects on an unconventional gaming setup.
+Join us at Strikeco as we delve into the intricacies of integrating physical game controls with advanced software. We'll be sharing our insights and practical steps, guiding anyone interested in undertaking a similar endeavor in their Unity projects, especially those involving unconventional gaming setups.
 
 ## OrangePi Background
-In my quest for the ideal SBC for this project, I settled on the OrangePi 5B, a choice driven by its impressive performance capabilities — both in terms of CPU and GPU — and its comparatively low cost.
+In our search for the ideal SBC for this project, we chose the OrangePi 5B. This decision was based on its impressive performance capabilities — in terms of both CPU and GPU — and its cost-effectiveness.
 
 The OrangePi 5B is equipped with two 4-core CPUs and the ARM Mali-G610 GPU, a combination that offers substantial power for demanding applications. This power is further complemented by an onboard NPU, an exciting feature that opens doors for future projects, potentially involving advanced computing tasks like machine learning.
 
 Another appealing aspect of the OrangePi 5B is its integrated WIFI and Bluetooth functionality. This not only allows for versatile communication options with the device but also paves the way for interesting future explorations in wireless connectivity.
 
-The board typically runs OrangePi OS (Druid), an Android-based operating system. This was a key factor in my decision, as I planned to develop a game using Unity. The Android platform is known for its compatibility with Unity, promising a smoother development process and optimal performance for the game.
+The board typically runs OrangePi OS (Druid), an Android-based operating system. This was a pivotal factor in our decision, as we were planning to develop a game using Unity. The Android platform is renowned for its compatibility with Unity, which we anticipated would ensure a smoother development process and optimal performance for our game.
 
-In summary, the OrangePi 5B struck me as an excellent choice — a robust, feature-rich board available at a competitive price, ideal for both my current needs and future experimentation.
+In summary, the OrangePi 5B emerged as an excellent choice for us — a robust, feature-rich board that's competitively priced. It perfectly suits our current project requirements and offers great potential for future experimentation and development.
 
 ## WiringOP
 WiringOP is a pre-installed Android application on the OrangePi Android OS, serving as a gateway to exploring the physical pins of the SBC. It provides functionalities to read and write to these pins, offering a visual representation of their states.
@@ -55,14 +62,14 @@ One notable feature of the WiringOP app is a button that displays the state of a
 
 From this table, two columns are particularly important: `wPi` and `V`. The `wPi` number is crucial for interacting with the pins through software, as it's used to reference a pin's state. The `V` column, on the other hand, indicates whether current is flowing through a pin, which is vital for setting or resetting it.
 
-After some experimentation with WiringOP, it became clear that if the app could read and write to the pins, there should be a way to replicate this functionality in my own Android application. But how to achieve this was not immediately obvious.
+After our team experimented with WiringOP, we realized that if the app could read and write to the pins, we should be able to replicate this functionality in our Android application. But how to achieve this was not immediately obvious.
 
-My initial search for resources or discussions online didn't yield straightforward answers. So, I pivoted to a more direct approach: diving into the source code of WiringOP itself. Given that WiringOP came pre-installed with the fresh installation of OrangePi OS, I surmised that it was bundled with the OS. This realization kicked off my search into the depths of OrangePI's Android OS source code, hoping to uncover the mechanisms that make WiringOP work as it does.
+Our initial search for resources and discussions online didn't yield straightforward answers. Consequently, we took a more direct approach: delving into the source code of WiringOP itself. Discovering that WiringOP came pre-installed with OrangePi OS led us to believe it was bundled with the operating system. This spurred our team to delve into the depths of OrangePI's Android OS source code, aiming to uncover the mechanisms behind WiringOP's functionality.
 
 ## OrangePi Android OS
-In my quest to establish a connection between my Android Kotlin code and the GPIO pins on the OrangePi board, I initially considered exploring the [WiringOP GitHub repository](https://github.com/orangepi-xunlong/wiringOP). However, this route proved challenging as the repository lacked clear instructions on compiling the code for Android integration, and the issues section offered no further insights.
+In our endeavor to establish a connection between our Android Kotlin code and the GPIO pins on the OrangePi board, we initially considered exploring the [WiringOP GitHub repository](https://github.com/orangepi-xunlong/wiringOP). This approach, however, proved challenging as the repository lacked clear instructions for compiling the code for Android integration, and we found no further insights in the issues section.
 
-Faced with limited options, I decided to delve directly into the OrangePi Android OS source code, available on their website. The source code is split into several `tar.gz` files, all housed on their Google Drive under the [RK3588S_Android_Source_Code](https://drive.google.com/drive/folders/14efL7SWZ68CZCbUayngLL4iAtGQoV9a0) directory.
+Confronted with limited options, our team decided to delve directly into the OrangePi Android OS source code, available on their official website. The source code is split into several `tar.gz` files, all housed on their Google Drive under the [RK3588S_Android_Source_Code](https://drive.google.com/drive/folders/14efL7SWZ68CZCbUayngLL4iAtGQoV9a0) directory.
 
 To start working with the code, the first step is to combine and extract these files. This involves:
 
@@ -71,29 +78,29 @@ To start working with the code, the first step is to combine and extract these f
 
 For Windows users, the [Cygwin](https://cygwin.com/) tool can provide the necessary `tar` command. Be prepared, as the extraction process is quite time-consuming and requires patience.
 
-Once the extraction is complete, the hunt for the WiringOP application begins. As anticipated, it resides in `packages/apps/WiringOP`. Here, not only is the application's source code present, but also, crucially, the C source code of WiringOP, similar to what's seen on GitHub. The key difference here is the presence of several `Android.mk` files – absent in the GitHub repository – which are essential for building the required libraries and files for any Android application looking to access the GPIOs on the board.
+Once the extraction was complete, we began our search for the WiringOP application. As anticipated, it was located in the `packages/apps/WiringOP` directory. Here, not only is the application's source code present, but also, crucially, the C source code of WiringOP, similar to what's seen on GitHub. The key difference here is the presence of several `Android.mk` files – absent in the GitHub repository – which are essential for building the required libraries and files for any Android application looking to access the GPIOs on the board.
 
-In the following section, we'll take a closer look at these components to understand what's needed for our project and how to effectively utilize them.
+In the following section, we will take a closer look at these components to understand what is required for our project and how we can effectively utilize them.
 
 ## WiringOP Internals
-In the heart of the WiringOP application lies the process of building the necessary libraries – the `.so` files. The most straightforward method I found is using Android Studio. Open the `packages/apps/WiringOP` directory in Android Studio and navigate to the `com.example.demo.MainActiviy` file. From there, execute the `Build->Make Module 'wiringOp.app.main'` command.
+In the heart of the WiringOP application lies the process of building the necessary libraries – the `.so` files. The most straightforward method we found involves using Android Studio. Open the `packages/apps/WiringOP` directory in Android Studio and navigate to the `com.example.demo.MainActiviy` file. From there, execute the `Build->Make Module 'wiringOp.app.main'` command.
 
-This process generates an `.apk` file, specifically `app-debug.apk`, located in the `build/outputs/apk/debug/` folder. The compiled libraries we need are tucked inside this `.apk`, under the `lib` folder. Within, you'll find two subfolders: `armeabi-v7a` and `arm64-v8a`, each corresponding to a different ARM architecture. For my project, I used `arm64-v8a`, which involved copying this entire folder into my own Android project under `src/main/jniLibs/`.
+This process generates an `.apk` file, specifically `app-debug.apk`, located in the `build/outputs/apk/debug/` folder. The compiled libraries we need are tucked inside this `.apk`, under the `lib` folder. Within, you'll find two subfolders: `armeabi-v7a` and `arm64-v8a`, each corresponding to a different ARM architecture. For our project, we chose `arm64-v8a`. This involved incorporating the entire folder into our Android project, specifically under the `src/main/jniLibs/` directory.
 
 Having successfully built the WiringOP libraries, the next step is to establish a communication interface with them. In the WiringOP app, under the `com.example.wiringop` package, there's a crucial file named `wpiControl`. It's a class filled with static methods enabling interaction with the WiringOP libraries.
 
-An important note here: when integrating `wpiControl` into your application, it’s essential to retain its original package structure, i.e., `com.example.wiringop`. While not aesthetically pleasing, this is necessary for the JNI (Java Native Interface) to locate the functions in the libraries. Though it’s likely possible to alter this using `javac -h` or similar tools, I didn’t delve into that for this project.
+An important note here: when integrating `wpiControl` into your application, it’s essential to retain its original package structure, i.e., `com.example.wiringop`. While not aesthetically pleasing, this is necessary for the JNI (Java Native Interface) to locate the functions in the libraries. While it might be feasible to modify this using tools like `javac -h`, we didn't explore this option for our current project.
 
-Before you start using the wpiControl class, there's one more critical step. The WiringPi library maps the memory directly to the pins, necessitating read and write permissions to the physical memory of the OrangePi device. This is achieved by executing `chmod 666 /dev/mem` before calling the `wiringPiSetup()` method. The most practical way to run this command is at your application's startup.
+Before integrating the wpiControl class into our application, there is an essential step to consider. The WiringPi library maps the memory directly to the pins, necessitating read and write permissions to the physical memory of the OrangePi device. This is achieved by executing `chmod 666 /dev/mem` before calling the `wiringPiSetup()` method. The most practical way to run this command is at your application's startup.
 
-A word of caution: the `chmod 666` command sets permissions that are not secure, especially for a production environment. While it was acceptable for my side project, I advise caution and further research for more secure alternatives in different contexts.
+A word of caution: the `chmod 666` command sets permissions that are not secure, especially for a production environment. While this approach was suitable for our initial testing, we recommend caution and encourage further research into more secure alternatives, especially in different or more extensive project contexts.
 
-Now, let’s pivot to how we integrate and use the `wpiControl` class in our own Android application.
+Now, let's discuss how we integrate and utilize the `wpiControl` class in our Android application.
 
 ## Our Project
 So far in this post, I've referenced our project several times, and it's time to delve deeper into its specifics. The project is a Unity game controlled by a D-pad, designed to run on the OrangePi5b with Android OS.
 
-The aim was to make the D-pad function like a standard Android D-pad, recognized and handled by Unity without needing custom event monitoring. To achieve this, I utilized the Android `input` CLI command to simulate key presses.
+The aim was to make the D-pad function like a standard Android D-pad, recognized and handled by Unity without needing custom event monitoring. To achieve this, we utilized the Android `input` CLI command to simulate key presses.
 
 Incorporating this functionality into Unity required creating an Android plugin. This plugin is essentially an Android module containing the compiled libraries and the `wpiControl` class from WiringOP, which interacts with the GPIOs and executes the `input` command.
 
@@ -105,7 +112,7 @@ Here is an example command for simulating a DPAD_UP key press:
 input keyevent 19
 ``` 
 
-I based the key simulations on the `KEYCODE_DPAD_*` constants found in the `android.view.KeyEvent` class of the Android SDK. The Android plugin was developed in Android Studio as an Android Library module, where I included the necessary `arm64-v8a` libraries and the `wpiControl` class.
+We based our key simulations on the `KEYCODE_DPAD_*` constants found in the `android.view.KeyEvent` class of the Android SDK. The Android plugin was developed in Android Studio as an Android Library module, where we included the necessary `arm64-v8a` libraries and the `wpiControl` class.
 
 For creating an Android plugin, we just need to create a new project in Android Studio, and create a new module of Android Library type.
 
@@ -211,7 +218,7 @@ class UnityEntrypoint() {
 }
 ```
 
-Building this module in Android Studio generates an `.aar` file, located in the `build/outputs/aar/` folder. This file is then integrated into the Unity project, a process I will describe in the next section.
+Building this module in Android Studio generates an `.aar` file, located in the `build/outputs/aar/` folder. This file is then integrated into the Unity project, a process we will describe in the next section.
 
 ## Unity
 With our Android plugin now ready, the next step is to integrate it into our Unity game. Unity handles Android plugins through the `AndroidJavaObject`, a powerful interface for interacting with Java objects. More information on this can be found in the [Unity documentation](https://docs.unity3d.com/Manual/android-plugins-java-code-from-c-sharp.html).
