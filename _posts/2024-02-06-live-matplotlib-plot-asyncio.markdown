@@ -1,14 +1,12 @@
 ---
-  layout: post
-    title: "Bridging Async and Sync: Plotting Async Data with matplotlib"
-    categories: matplotlib python asyncio
-    created: 2024-02-06
-    date: 2024-02-07 00:00:00 +0200
-    published: true
+layout: post
+title: "Bridging Async and Sync: Plotting Async Data with matplotlib"
+categories: matplotlib python asyncio
+created: 2024-02-06
+date: 2024-02-07 00:00:00 +0200
+published: true
 ---
-
 ## Overview
-
 In my recent project, I aimed to visualize data from a Bluetooth Low Energy (BLE) device, a task that required
 integrating different technologies. The `bleak` library was my choice for managing BLE communications in Python, known
 for
