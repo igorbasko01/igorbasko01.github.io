@@ -9,7 +9,7 @@ published: false
 # Writing Tasks
 - [x] Write a list of chapters
 - [x] Prepare a task for each chapter
-- [ ] Write the Overview draft
+- [x] Write the Overview draft
 - [ ] Write the The Challenge draft
 - [ ] Write the rkdevelop Tool draft
 - [ ] Write the loader file draft
@@ -25,7 +25,11 @@ published: false
 - [ ] Review the Conclusion draft and finalize it
 - [ ] Update the `date` field to the current date
 - [ ] Update the `published` field to `true`
+
 ## Overview
+In this post I will share with you how to flash an Android OS image on an Orange Pi 5b board using a Linux host.
+
+Which apparently is not that straightforward...
 
 ## The Challenge
 ### Updating the Orange Pi Android Source Code (only on Linux)
