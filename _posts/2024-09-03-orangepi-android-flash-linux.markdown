@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Flashing Android on Orange Pi 5b with Linux Host"
+title: "Flashing Android on Orange Pi 5B with Linux Host"
 categories: orangepi android aosp linux
 created: 2024-09-03
 date: 2024-09-03 00:00:00 +0200
@@ -11,7 +11,7 @@ published: false
 - [x] Prepare a task for each chapter
 - [x] Write the Overview draft
 - [x] Write the The Challenge draft
-- [ ] Write the rkdevelop Tool draft
+- [x] Write the rkdevelop Tool draft
 - [ ] Write the loader file draft
 - [ ] Write the Flashing Addresses draft
 - [ ] Write the full process and script draft
@@ -43,8 +43,23 @@ This approach of building the OS on Linux, but only able to flash on Windows, is
 I've also tried using Windows' WSL for the build process, but it wasn't able to install part of the required packages.
 
 ## The rkdevelop Tool
-### What is it?
-### How did I installed it on Linux
+The Orange Pi 5B has a Rockchip SoC, and Rockchip provides a tool called [`rkdeveloptool`](https://github.com/rockchip-linux/rkdeveloptool) which allows flashing OS images to the device.
+
+The issue was that I couldn't find any information on how to use this tool to flash an Android OS image to the Orange Pi 5B device. Or any similar information. 
+
+To install the `rkdeveloptool` on Ubuntu, I've used the following commands:
+```shell
+sudo apt-get update
+sudo apt-get install -y libudev-dev libusb-1.0-0-dev dh-autoreconf pkg-config libusb-1.0 build-essential git wget
+git clone https://github.com/rockchip-linux/rkdeveloptool
+cd rkdeveloptool
+wget https://patch-diff.githubusercontent.com/raw/rockchip-linux/rkdeveloptool/pull/73.patch
+wget https://patch-diff.githubusercontent.com/raw/rockchip-linux/rkdeveloptool/pull/85.patch
+git am *.patch
+autoreconf -i
+./configure
+make -j $(nproc)
+```
 
 ## The loader file
 ### What is it?
