@@ -12,7 +12,7 @@ published: false
 - [x] Write the Overview draft
 - [x] Write the The Challenge draft
 - [x] Write the rkdevelop Tool draft
-- [ ] Write the loader file draft
+- [x] Write the loader file draft
 - [ ] Write the Flashing Addresses draft
 - [ ] Write the full process and script draft
 - [ ] Write the Conclusion draft
@@ -62,10 +62,15 @@ make -j $(nproc)
 ```
 
 ## The loader file
-### What is it?
+Before it is possible to flash the OS image to the Orange Pi 5B device, it is necessary to flash a loader file to the device.
+
+The loader file could be found here: [Orange Pi 5B loader file](https://docs.radxa.com/en/rock5/rock5b/low-level-dev/maskrom/linux).
+This file is used to boot the device into a mode where it is possible to flash the OS image to it.
+
+It will be loaded as part of the flashing process. Command details will be provided in the next chapters.
 
 ## The Flashing Addresses
-### What are they?
+### What are they? How the update.img is constructed from several images.
 ### How did I get them on Windows
 ### How did I flash them on Linux
 
