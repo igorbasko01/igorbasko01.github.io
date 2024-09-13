@@ -69,7 +69,17 @@ This file is used to boot the device into a mode where it is possible to flash t
 
 It will be loaded as part of the flashing process. Command details will be provided in the next chapters.
 
-## The Flashing Addresses
+## The Flashing Process
+As part of building the Android OS, there are several images that are created:
+1. `uboot.img`
+2. `misc.img`
+3. `dtbo.img`
+4. `vbmeta.img`
+5. `boot.img`
+6. `recovery.img`
+7. `baseparameter.img`
+8. `super.img`
+They all are combined into a single `update.img` file.
 ### What are they? How the update.img is constructed from several images.
 ### How did I get them on Windows
 ### How did I flash them on Linux
