@@ -13,9 +13,9 @@ published: false
 - [x] Write the The Challenge draft
 - [x] Write the rkdevelop Tool draft
 - [x] Write the loader file draft
-- [ ] Write the Flashing Addresses draft
-- [ ] Write the full process and script draft
-- [ ] Write the Conclusion draft
+- [x] Write the Flashing Addresses draft
+- [x] Write the full process and script draft
+- [x] Write the Conclusion draft
 - [ ] Review the Overview draft and finalize it
 - [ ] Review the The Challenge draft and finalize it
 - [ ] Review the rkdevelop Tool draft and finalize it
@@ -79,11 +79,141 @@ As part of building the Android OS, there are several images that are created:
 6. `recovery.img`
 7. `baseparameter.img`
 8. `super.img`
-They all are combined into a single `update.img` file.
-### What are they? How the update.img is constructed from several images.
-### How did I get them on Windows
-### How did I flash them on Linux
 
-## The full process and script
+As part of the build process they all are combined into a single `update.img` file using RKImageMaker tool. 
+It is done automatically by the build process, so we don't need to worry about it. 
+
+Each image has its own responsibility and is flashed to a specific address on the device. 
+I might cover the responsibilities of each image in a separate post.
+
+For now we just need to know that we need all of them to flash the OS to the device.
+
+On Windows the flashing process is described in detail in the Orange Pi 5B manual.
+But there is no description on how to flash the Android OS on a Linux host.
+
+Fortunately we can look at the logs of the Windows flashing process and see
+that behind the scenes the Windows tool is splitting the `update.img` back to the
+individual images and flashing them to the device one by one using specific addresses.
+
+I found out the following addresses for each image:
+1. `uboot.img` - 0x4000
+2. `misc.img` - 0x9000
+3. `dtbo.img` - 0xb000
+4. `vbmeta.img` - 0xd000
+5. `boot.img` - 0xd800
+6. `recovery.img` - 0x3f800
+7. `baseparameter.img` - 0x1f7800
+8. `super.img` - 0x1f8000
+
+Now using the `rkdeveloptool` we can flash the images to the device.
+Example command for flashing the `uboot.img` to the device:
+```shell
+sudo rkdeveloptool wl 0x4000 uboot.img
+```
+
+## The Full Process
+So basically the full process is pretty simple. 
+After building the Android OS we need to do the following steps:
+1. Put the device into maskrom mode - It is done by holding the maskrom button on the board while powering the device on.
+2. Flash the loader file to the device - `sudo rkdeveloptool db rk3588_spl_loader_v1.15.113.bin`
+3. Flash the individual images to the device using specific addresses - `sudo rkdeveloptool wl <address> <image_path>`
+4. Reboot the device - `sudo rkdeveloptool rd`
+
+After that the device should boot into the flashed Android OS.
+
+I've also prepared a bash script that automates the flashing process, 
+which also does some basic validations before it starts the flashing process.
+
+The full script:
+```bash
+#!/bin/bash
+
+# Check if the correct number of arguments is provided
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 <folder_path>"
+    exit 1
+fi
+
+# Set the folder path from the input parameter
+FOLDER_PATH=$1
+
+# Check if the folder exists
+if [ ! -d "$FOLDER_PATH" ]; then
+    echo "Error: Folder '$FOLDER_PATH' does not exist."
+    exit 1
+fi
+
+# the loader file should be located in the current directory.
+LOADER="$(pwd)/rk3588_spl_loader_v1.15.113.bin"
+
+# Define the images and their offsets
+declare -A IMAGES=(
+    [uboot.img]=0x4000
+    [misc.img]=0x9000
+    [dtbo.img]=0xb000
+    [vbmeta.img]=0xd000
+    [boot.img]=0xd800
+    [recovery.img]=0x3f800
+    [baseparameter.img]=0x1f7800
+    [super.img]=0x1f8000
+)
+
+# Check if the loader file exists
+if [ ! -f "$LOADER" ]; then
+    echo "Error: Loader file '$LOADER' does not exist."
+    exit 1
+fi
+
+# Check if a device in Maskrom mode is connected
+DEVICE_INFO=$(sudo rkdeveloptool ld | grep "Maskrom")
+
+if [ -z "$DEVICE_INFO" ]; then
+    echo "No device in Maskrom mode detected. Please connect the device and ensure it is in Maskrom mode."
+    exit 1
+else
+    echo "Device in Maskrom mode detected: $DEVICE_INFO"
+fi
+
+# Check if all required image files are available
+for IMAGE in "${!IMAGES[@]}"; do
+    IMAGE_PATH="$FOLDER_PATH/$IMAGE"
+    if [ ! -f "$IMAGE_PATH" ]; then
+        echo "Error: Required image file '$IMAGE_PATH' is missing."
+        exit 1
+    fi
+done
+
+echo "All required image files are present."
+
+# Load the loader
+echo "Loading the loader from $LOADER..."
+sudo rkdeveloptool db $LOADER
+
+# Flash each image
+for IMAGE in "${!IMAGES[@]}"; do
+    OFFSET=${IMAGES[$IMAGE]}
+    IMAGE_PATH="$FOLDER_PATH/$IMAGE"
+    
+    # Check if the image file exists
+    if [ -f "$IMAGE_PATH" ]; then
+        echo "Flashing $IMAGE at offset $OFFSET..."
+        sudo rkdeveloptool wl $OFFSET $IMAGE_PATH
+    else
+        echo "Warning: Image file '$IMAGE_PATH' not found, aborting."
+        exit 1
+    fi
+done
+
+# Reboot the device
+echo "Rebooting the device..."
+sudo rkdeveloptool rd
+
+echo "Flashing process completed."
+```
 
 ## Conclusion
+Now after we are able to flash the Android OS on a Linux host, the feedback cycles are much faster and the development process is much smoother.
+In my experience it reduced my cognitive load and allowed me to focus more on the development process itself. 
+And solving the actual problems, rather than wasting a lot of time on switching between the operating systems and remembering what I was doing and what I wanted to do. 
+
+Thanks for reading.
