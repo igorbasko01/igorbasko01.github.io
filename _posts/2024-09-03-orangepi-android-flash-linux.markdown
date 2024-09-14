@@ -1,51 +1,32 @@
 ---
 layout: post
-title: "Flashing Android on Orange Pi 5B with Linux Host"
+title: "Flashing Android on the Orange Pi 5B from a Linux Host"
 categories: orangepi android aosp linux
 created: 2024-09-03
-date: 2024-09-03 00:00:00 +0200
-published: false
+date: 2024-09-13 00:00:00 +0200
+published: true
 ---
-# Writing Tasks
-- [x] Write a list of chapters
-- [x] Prepare a task for each chapter
-- [x] Write the Overview draft
-- [x] Write the The Challenge draft
-- [x] Write the rkdevelop Tool draft
-- [x] Write the loader file draft
-- [x] Write the Flashing Addresses draft
-- [x] Write the full process and script draft
-- [x] Write the Conclusion draft
-- [ ] Review the Overview draft and finalize it
-- [ ] Review the The Challenge draft and finalize it
-- [ ] Review the rkdevelop Tool draft and finalize it
-- [ ] Review the loader file draft and finalize it
-- [ ] Review the Flashing Addresses draft and finalize it
-- [ ] Review the full process and script draft and finalize it
-- [ ] Review the Conclusion draft and finalize it
-- [ ] Update the `date` field to the current date
-- [ ] Update the `published` field to `true`
-
 ## Overview
-In this post I will share with you how to flash an Android OS image on an Orange Pi 5B board using a Linux host.
+In this post, I will show you how to flash an Android OS image on an Orange Pi 5B board using a Linux host.
 
-Which apparently is not that straightforward...
+Though it’s not as straightforward as it might seem.
 
 ## The Challenge
-The [Orange Pi 5B manual](https://drive.google.com/drive/folders/11JLZcvjU1eN6SkJPZ7m9gm6q-_UVtqYd) mentions that building its Android based OS, is done on a Linux host.
+The [Orange Pi 5B manual](https://drive.google.com/drive/folders/11JLZcvjU1eN6SkJPZ7m9gm6q-_UVtqYd) mentions that building its Android based OS, needs to be done on a Linux host.
 
 The build output is an `update.img` file that is possible to flash to the Orange Pi 5B device using the Windows only methods, through a TF card or a Type-C cable into eMMC.
 
 The proposed approach in the manual for flashing is using different Windows compatible applications, such as `RKDevTool` or `SDDiskTool`.
 
-This approach of building the OS on Linux, but only able to flash on Windows, is an annoying approach as it requires a constant switch between the Linux and the Windows operating systems. Which is very time-consuming and affects the feedback cycle significantly.
+This approach of building the OS on Linux, but can only be flashed using Windows, is an annoying approach as it requires a constant switch between the Linux and the Windows operating systems. 
+Which is very time-consuming and significantly affects the feedback cycle.
 
 I've also tried using Windows' WSL for the build process, but it wasn't able to install part of the required packages.
 
 ## The rkdevelop Tool
 The Orange Pi 5B has a Rockchip SoC, and Rockchip provides a tool called [`rkdeveloptool`](https://github.com/rockchip-linux/rkdeveloptool) which allows flashing OS images to the device.
 
-The issue was that I couldn't find any information on how to use this tool to flash an Android OS image to the Orange Pi 5B device. Or any similar information. 
+The issue was that I couldn't find any information on how to use this tool to flash an Android OS image to the Orange Pi 5B device, or any similar information. 
 
 To install the `rkdeveloptool` on Ubuntu, I've used the following commands:
 ```shell
@@ -114,7 +95,7 @@ sudo rkdeveloptool wl 0x4000 uboot.img
 ## The Full Process
 So basically the full process is pretty simple. 
 After building the Android OS we need to do the following steps:
-1. Put the device into maskrom mode - It is done by holding the maskrom button on the board while powering the device on.
+1. Put the device into maskrom mode - This is done by holding the maskrom button on the board while powering the device on.
 2. Flash the loader file to the device - `sudo rkdeveloptool db rk3588_spl_loader_v1.15.113.bin`
 3. Flash the individual images to the device using specific addresses - `sudo rkdeveloptool wl <address> <image_path>`
 4. Reboot the device - `sudo rkdeveloptool rd`
@@ -213,7 +194,9 @@ echo "Flashing process completed."
 
 ## Conclusion
 Now after we are able to flash the Android OS on a Linux host, the feedback cycles are much faster and the development process is much smoother.
-In my experience it reduced my cognitive load and allowed me to focus more on the development process itself. 
-And solving the actual problems, rather than wasting a lot of time on switching between the operating systems and remembering what I was doing and what I wanted to do. 
+In my experience, 
+it has reduced my cognitive load and allowed me to focus more on the development process itself, 
+and solving the actual problems, 
+rather than wasting a lot of time on switching between the operating systems and remembering what I was doing and what I wanted to do. 
 
 Thanks for reading.
